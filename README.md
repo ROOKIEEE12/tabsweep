@@ -1,18 +1,18 @@
-# 🧹 TabSweep
+# TabSweep
 
 **Tame your browser tabs.** A lightweight, local-first Chrome extension built to group, de-duplicate, and tidy up hundreds of tabs in seconds. Built with Manifest V3 and TypeScript.
 
 ---
 
-## ✨ Features
+## Features
 
-- **📂 Auto-Categorization**: Intelligently groups your open tabs into logical categories (e.g., Work, Social, Reading, Shopping) so you can focus on what matters.
-- **👯 Duplicate Detection**: Finds and removes duplicate tabs even if they have different tracking parameters (e.g., `utm_source`, `fbclid`), URL fragments (`#hash`), or trailing slashes.
-- **🕰️ Stale Tabs Cleanup**: Identifies tabs you haven't looked at in a while (e.g., 30+ days inactive using `tab.lastAccessed`) to help you declutter your workspace.
-- **📚 Read-Later Stack**: Save tabs for later without keeping them open, reducing memory usage and visual noise.
-- **💾 Session Management**: Save your current window's tabs as a session and restore them later—complete with tab groups intact.
+- **Auto-Categorization**: Intelligently groups your open tabs into logical categories (e.g., Work, Social, Reading, Shopping) so you can focus on what matters.
+- **Duplicate Detection**: Finds and removes duplicate tabs even if they have different tracking parameters (e.g., `utm_source`, `fbclid`), URL fragments (`#hash`), or trailing slashes.
+- **Stale Tabs Cleanup**: Identifies tabs you haven't looked at in a while (e.g., 30+ days inactive using `tab.lastAccessed`) to help you declutter your workspace.
+- **Read-Later Stack**: Save tabs for later without keeping them open, reducing memory usage and visual noise.
+- **Session Management**: Save your current window's tabs as a session and restore them later—complete with tab groups intact.
 
-## 🔒 Privacy First
+## Privacy First
 
 Your data is yours. **TabSweep is 100% local.**
 - Everything is stored using `chrome.storage.local`.
@@ -20,14 +20,14 @@ Your data is yours. **TabSweep is 100% local.**
 - **Zero** analytics or tracking.
 - Required Permissions: `tabs`, `tabGroups`, `storage`, `sidePanel`.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Extension Framework:** Manifest V3
 - **Language:** TypeScript
 - **Bundler:** ESBuild
 - **UI:** Vanilla HTML/CSS/JS (Lightweight Side Panel)
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Installation (Developer Mode)
 
@@ -50,7 +50,7 @@ Your data is yours. **TabSweep is 100% local.**
 - `npm run typecheck`: Runs TypeScript type checking without emitting files.
 - `npm run zip`: Builds the project and creates a `tabsweep.zip` file, ready for publishing to the Chrome Web Store.
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] **Similar-tab clustering**: Local TF-IDF to group logically similar tabs.
 - [ ] **Research briefs**: Generate summaries from selected tabs (opt-in feature).
