@@ -69,7 +69,11 @@ async function restoreSession(s: Session) {
 }
 
 const row = (title: string, sub: string, ...actions: HTMLElement[]) =>
-  h("div", { class: "row" }, h("span", { class: "t", title }, title, " ", h("small", {}, sub)), ...actions);
+  h("div", { class: "row" },
+    h("span", { class: "t", title }, title),
+    h("small", {}, sub),
+    ...actions
+  );
 
 async function render() {
   const tabs = await chrome.tabs.query({ currentWindow: true });
@@ -81,30 +85,69 @@ async function render() {
   const nameIn = h("input", { type: "text", placeholder: "Session name (optional)" });
   const act = (fn: () => Promise<unknown>) => async () => { await fn(); render(); };
 
+  // Category pills
+  const pills = [...counts].map(([c, n]) => h("span", { class: "pill" }, `${c} ${n}`));
+
   app.replaceChildren(
-    h("h1", {}, "TabSweep"),
+    // Header
+    h("div", { class: "header" },
+      h("div", { class: "header-icon" }, "🧹"),
+      h("h1", {}, "TabSweep")
+    ),
+
+    // Stats
     h("div", { class: "stats" },
-      h("div", { class: "stat" }, h("b", {}, String(tabs.length)), "tabs"),
-      h("div", { class: "stat" }, h("b", {}, String(dupes.length)), "duplicates"),
-      h("div", { class: "stat" }, h("b", {}, String(stale.length)), `stale ${STALE_DAYS}d+`)),
-    h("h2", {}, "Clean up"),
-    h("div", { class: "row" },
-      h("button", { class: "primary", disabled: !dupes.length, onclick: act(() => chrome.tabs.remove(dupes.map((t) => t.id!))) }, `Close ${dupes.length} duplicates`),
-      h("button", { onclick: act(() => groupByCategory(tabs)) }, "Group by category")),
-    h("div", { class: "row" }, h("small", {}, [...counts].map(([c, n]) => `${c} ${n}`).join(" · "))),
-    h("h2", {}, `Stale tabs (${stale.length})`),
-    ...(stale.length ? stale.slice(0, 15).map((t) => row(t.title ?? t.url!, `${Math.floor((Date.now() - last(t)!) / DAY)}d`,
-      h("button", { onclick: act(async () => { await saveReadLater([{ url: t.url!, title: t.title ?? t.url!, addedAt: Date.now() }, ...later]); await chrome.tabs.remove(t.id!); }) }, "Read later"),
-      h("button", { onclick: act(() => chrome.tabs.remove(t.id!)) }, "Close"))) : [h("div", { class: "empty" }, "Nothing stale.")]),
+      h("div", { class: "stat" }, h("b", {}, String(tabs.length)), h("span", {}, "Tabs")),
+      h("div", { class: "stat" }, h("b", {}, String(dupes.length)), h("span", {}, "Dupes")),
+      h("div", { class: "stat" }, h("b", {}, String(stale.length)), h("span", {}, `Stale ${STALE_DAYS}d+`))
+    ),
+
+    // Clean up
+    h("h2", {}, "Clean Up"),
+    h("div", { class: "action-row" },
+      h("button", { class: "primary", disabled: !dupes.length, onclick: act(() => chrome.tabs.remove(dupes.map((t) => t.id!))) }, `✕ Close ${dupes.length} duplicates`),
+      h("button", { onclick: act(() => groupByCategory(tabs)) }, "⬡ Group by category")
+    ),
+
+    // Category pills
+    ...(pills.length ? [h("div", { class: "category-pills" }, ...pills)] : []),
+
+    // Stale Tabs
+    h("h2", {}, `Stale Tabs (${stale.length})`),
+    ...(stale.length
+      ? stale.slice(0, 15).map((t) => row(
+          t.title ?? t.url!,
+          `${Math.floor((Date.now() - last(t)!) / DAY)}d ago`,
+          h("button", { class: "sm", onclick: act(async () => { await saveReadLater([{ url: t.url!, title: t.title ?? t.url!, addedAt: Date.now() }, ...later]); await chrome.tabs.remove(t.id!); }) }, "📌"),
+          h("button", { class: "sm danger", onclick: act(() => chrome.tabs.remove(t.id!)) }, "✕")
+        ))
+      : [h("div", { class: "empty" }, "✨ No stale tabs — nice!")]),
+
+    // Sessions
     h("h2", {}, "Sessions"),
-    h("div", { class: "row" }, nameIn, h("button", { onclick: act(() => saveSession(tabs, nameIn.value.trim())) }, "Save window")),
-    ...(sessions.length ? sessions.map((s) => row(s.name, `${s.tabs.length} tabs`,
-      h("button", { onclick: () => restoreSession(s) }, "Restore"),
-      h("button", { onclick: act(() => saveSessions(sessions.filter((x) => x.id !== s.id))) }, "✕"))) : [h("div", { class: "empty" }, "No saved sessions.")]),
-    h("h2", {}, `Read later (${later.length})`),
-    ...(later.length ? later.map((r) => row(r.title, new URL(r.url).hostname,
-      h("button", { onclick: act(async () => { await chrome.tabs.create({ url: r.url }); await saveReadLater(later.filter((x) => x.url !== r.url)); }) }, "Open"),
-      h("button", { onclick: act(() => saveReadLater(later.filter((x) => x.url !== r.url))) }, "✕"))) : [h("div", { class: "empty" }, "Empty.")]),
+    h("div", { class: "session-input-row" },
+      nameIn,
+      h("button", { class: "primary", onclick: act(() => saveSession(tabs, nameIn.value.trim())) }, "💾 Save")
+    ),
+    ...(sessions.length
+      ? sessions.map((s) => row(
+          s.name,
+          `${s.tabs.length} tabs`,
+          h("button", { class: "sm", onclick: () => restoreSession(s) }, "▶ Open"),
+          h("button", { class: "sm danger icon-btn", onclick: act(() => saveSessions(sessions.filter((x) => x.id !== s.id))) }, "✕")
+        ))
+      : [h("div", { class: "empty" }, "No saved sessions yet.")]),
+
+    // Read Later
+    h("h2", {}, `Read Later (${later.length})`),
+    ...(later.length
+      ? later.map((r) => row(
+          r.title,
+          new URL(r.url).hostname,
+          h("button", { class: "sm", onclick: act(async () => { await chrome.tabs.create({ url: r.url }); await saveReadLater(later.filter((x) => x.url !== r.url)); }) }, "↗ Open"),
+          h("button", { class: "sm danger icon-btn", onclick: act(() => saveReadLater(later.filter((x) => x.url !== r.url))) }, "✕")
+        ))
+      : [h("div", { class: "empty" }, "Nothing saved yet.")])
   );
 }
 
