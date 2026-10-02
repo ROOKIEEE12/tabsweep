@@ -88,7 +88,7 @@ async function groupByCategory(tabs: chrome.tabs.Tab[]) {
   for (const t of tabs.filter((t) => isHttp(t) && !t.pinned && t.id != null)) bucket(buckets, categorize(t.url!)).push(t.id!);
   for (const [cat, ids] of buckets) {
     const gid = await chrome.tabs.group({ tabIds: ids });
-    await chrome.tabGroups.update(gid, { title: `${cat} (${ids.length})`, color: CATEGORY_COLORS[cat] });
+    await chrome.tabGroups.update(gid, { title: cat, color: CATEGORY_COLORS[cat] });
   }
 }
 
